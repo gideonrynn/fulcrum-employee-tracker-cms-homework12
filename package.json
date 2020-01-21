@@ -1,0 +1,29 @@
+{
+  "name": "fulcrum-employee-tracker",
+  "version": "1.0.0",
+  "description": "employee tracker cms that supports your business process",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gideonrynn/fulcrum-employee-tracker-cms-homework12.git"
+  },
+  "keywords": [
+    "employee",
+    "tracker",
+    "fulcrum",
+    "cms",
+    "business"
+  ],
+  "author": "Sarah Dillard",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gideonrynn/fulcrum-employee-tracker-cms-homework12/issues"
+  },
+  "homepage": "https://github.com/gideonrynn/fulcrum-employee-tracker-cms-homework12#readme",
+  "dependencies": {
+    "inquirer": "^7.0.3"
+  }
+}
