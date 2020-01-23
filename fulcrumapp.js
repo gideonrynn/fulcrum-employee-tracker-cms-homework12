@@ -3,11 +3,15 @@
 //Add departments, roles, employees
 //Update employee roles
 
+//note - for testing, will have a schema (which creates the db, table and columns) and a seed (which creates the )
+
+//need to use any transactions?
+
 const inquirer = require("inquirer");
 const mysql = require('mysql');
 const consoleTable = require('console.table');
+const connectionp = require("./assets/connection/connection.js")
 // const fs = require("fs");
-
 
 // create the connection for mysql db
 const connection = mysql.createConnection({
@@ -16,16 +20,21 @@ const connection = mysql.createConnection({
   user: "root",
 
   // Your password //************replace??
-  password: "NUBC01root!",
+  password: "",
 
   //starting with my own db for testing
   //update with starter db for other users
   database: ""
 });
 
-// connect to server and db
+// connect to server and db, and once connected, run first function
 connection.connect(function(err) {
-  if (err) throw err;
+
+  if (err) {
+    console.error("error connecting: " + err.stack);
+    return;
+  }
+  console.log("connected as id " + connection.threadId);
 
   //run function that will ask the user what they want to do in the database
   action();
@@ -51,26 +60,31 @@ function action() {
 
       .then(function(answer) {
 
-      // based on their answer, run the appropriate function
+      // based on their answer, run the appropriate function and break processing 
+      switch (answer.action) {
 
-      if (answer.action === "View all employees") {
+        case "View all employees":
         viewEmplAll();
-      }
+        break;
 
-      if (answer.action === "Add an employee") {
+        case "View all employees by department":
+        viewEmplByDept();
+        break;
+
+        case "Add an employee": 
         addEmpl();
-      }
+        break;
 
-      if (answer.action === "Update an employee") {
+        case "Update an employee":
         updateEmplRole();
-      } 
+        break;
 
-      if (answer.action === "Remove an employee") {
+        case "Remove an employee":
         removeEmpl();
+        break;
       }
 
     });
-
 }
 
 
@@ -79,6 +93,17 @@ function viewEmplAll () {
   //SELECT * FROM [table]
 
   console.log(`viewEmplAll function run`);
+
+  //ask if user would like to take another action in db
+  contAction();
+
+}
+
+function viewEmplByDept () {
+  //connect to db and pull back all tables
+  //SELECT * FROM [table]
+
+  console.log(`viewEmplByDept function run`);
 
   //ask if user would like to take another action in db
   contAction();
@@ -96,57 +121,60 @@ function addEmpl () {
 
   inquirer
 
-    .prompt({
-      type: "input",
-      name: "name",
-      message: "Enter employee's first name:",
-      
-      validate: (text) => {
-        if (text === "") {
+    .prompt([
+      {
+        type: "input",
+        name: "firstname",
+        message: "Enter employee's first name:",
+        validate: (text) => {
+          if (text === "") {
             return "Please enter a name";
+          }
+            return true;
         }
-        return true;
-      }
-    },
-    {
-      type: "input",
-      name: "name",
-      message: "Enter employee's last name:",
-      validate: (text) => {
-        if (text === "") {
-            return "Please enter a name";
+      },
+      {
+        type: "input",
+        name: "lastname",
+        message: "Enter employee's last name:",
+        validate: (text) => {
+          if (text === "") {
+              return "Please enter a name";
+          }
+          return true;
         }
-        return true;
-      }
-    },
-    {
-      type: "input",
-      name: "name",
-      message: "Enter employee's role:",
-      validate: (text) => {
-        if (text === "") {
-            return "Please enter a name";
+      },
+      {
+        type: "input",
+        name: "role",
+        message: "Enter employee's role:",
+        validate: (text) => {
+          if (text === "") {
+              return "Please enter a name";
+          }
+          return true;
         }
-        return true;
+      },
+      {
+        type: "list",
+        name: "manager",
+        message: "Who is the employee's manager?",
+        choices: 
+        //function here to return data from sql database?
+        ["Name"]
       }
-    },
-    {
-      type: "list",
-      name: "type",
-      message: "Who is the employee's manager?",
-      choices: 
-      //function here to return data from sql database?
-      ["Name"]
-    })
+    ])
 
     .then(function(answer) {
 
-      console.log(`do something with these answers`)
+      //console.logs
+      console.log(answer);
+      console.log(`do something with these answers`);
+
+      //ask if user would like to take another action in db
+      contAction();
 
   });
-
-  //ask if user would like to take another action in db
-  contAction();
 
 }
 
@@ -155,21 +183,19 @@ function updateEmplRole () {
   console.log(`updateEmpl function run`);
 
   inquirer
-    .prompt({
-      type: "input",
-      name: "name",
-      message: "Enter employee's first name:",
-      choices: 
-      //get list or prompt user for id
-      //function here to return data from sql database?
-      ["Name"],
-      validate: (text) => {
-        if (text === "") {
-            return "Please enter a name";
-        }
-        return true;
+    .prompt([
+      {
+        type: "input",
+        name: "emplname",
+        message: "Select employee to update",
+        choices: 
+        //get list or prompt user for id
+        //function here to return data from sql database?
+        ["Name1",
+        "Name2",
+        "Name3"]
       }
-    })
+    ])
 
     .then(function(answer) {
 
@@ -187,20 +213,23 @@ function removeEmpl() {
   console.log(`removeEmpl function run`);
 
   inquirer
-    .prompt({
+    .prompt([
+      {
         type: "list",
         name: "type",
-        message: "Which employee should be removed?",
+        message: "Select employee to be removed",
         choices: 
         //consider pulling from list or asking for unique information. would id work here? may only be for db purposes
-        ["Name", 
-         "Name", 
-         "Name"],
-    })
+        ["Name1", 
+         "Name2", 
+         "Name3"],
+      }
+    ])
 
     .then(function(answer) {
 
-      //insert into database
+      //console.logs
+      console.log()
       console.log(`do something with this answer`);
 
       //ask if user would like to take another action in db
@@ -214,28 +243,28 @@ function removeEmpl() {
 function contAction () {
 
   inquirer
-    .prompt({
-      
+    .prompt([
+      {
         type: "confirm",
         name: "continue",
         message: "Take more action in the database?"
-      
-    })
+      }
+    ])
 
     .then(function(answer) {
-
-      console.log(`do something with this answer`)
 
       //if user opts to take another action on the database, run startup prompts again. If not, end the connection
       if (answer.continue === true) {
 
         action();
         
-        } else {
+      } else {
 
-          connection.end();
-          console.log(`connection to database closed!`)
-        }
+        //end connection and notify user
+        connection.end();
+        console.log(`connection to database closed!`)
+
+      }
 
   });
 
@@ -249,3 +278,15 @@ function contAction () {
 
 //can be used within an inquirer question object when a question should only be asked based on certain information within the current prompts
 // when: (answers) => answers.type === 'Add an employee'
+
+
+//uncomment to show how console.table will print 
+// console.table([
+//   {
+//     name: 'foo',
+//     age: 10
+//   }, {
+//     name: 'bar',
+//     age: 20
+//   }
+// ]);
