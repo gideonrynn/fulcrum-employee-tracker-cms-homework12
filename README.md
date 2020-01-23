@@ -13,6 +13,8 @@ Once logged in with [GitHub account](https://github.login/), clone the repo loca
   git clone https://github.com/gideonrynn/teampacr-profile-generator-hw7.git
 ```
 
+Update password and database to local database. Example files in test files folder. 
+
 Also see: [Cloning a repository](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository).
 
 
@@ -29,7 +31,7 @@ This project was built using:
 
   - Node
   - [console.table 0.10.0](https://www.npmjs.com/package/console.table)
-  - [InquirerJs 0.2.3](https://www.npmjs.com/package/inquirer/v/0.2.3)
+  - [InquirerJs ^7.0.3](https://www.npmjs.com/package/inquirer/v/0.2.3) - installed from 0.2.3, listed ^7
   - [MySQL 2.17.1](https://www.npmjs.com/package/mysql)
   
 

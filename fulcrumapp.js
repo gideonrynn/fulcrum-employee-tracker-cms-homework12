@@ -19,11 +19,10 @@ const connection = mysql.createConnection({
   port: 3306,
   user: "root",
 
-  // Your password //************replace??
+  // Your password
   password: "",
 
-  //starting with my own db for testing
-  //update with starter db for other users
+  //Your db
   database: ""
 });
 
@@ -94,8 +93,36 @@ function viewEmplAll () {
 
   console.log(`viewEmplAll function run`);
 
-  //ask if user would like to take another action in db
-  contAction();
+  //select statement
+  var query = "select employee.id, employee.first_name, employee.last_name, appointment.title, department.dept as 'department', appointment.salary " ;
+  //, ifnull(concat(m.first_name, ' ', m.last_name), 'none') as 'manager' 
+  
+  //plus from statement that inclues join
+  query += "from employee inner join appointment on (employee.appt_id = appointment.id) ";
+
+  //join department by department id and foreign key in appointment table
+  query += "inner join department on appointment.department_id = department.id "; 
+
+  // query += "left join employee as m on employee.manager_id = m.manager_id order by first_name asc";
+
+    connection.query(query, function(err, res){
+      if (err) throw err;
+
+        //set variable to hold response from query
+        let alldata = [];
+
+        //loop through response and push all to alldata var
+        for (var i = 0; i < res.length; i++) {
+          alldata.push(res[i])
+        }
+
+        //display all data as table
+        console.table( alldata );
+
+      //ask if user would like to take another action in db
+      contAction();
+
+    });
 
 }
 
@@ -105,8 +132,6 @@ function viewEmplByDept () {
 
   console.log(`viewEmplByDept function run`);
 
-  //ask if user would like to take another action in db
-  contAction();
 
 }
 
@@ -120,7 +145,6 @@ function addEmpl () {
   //   if (err) throw err;
 
   inquirer
-
     .prompt([
       {
         type: "input",
