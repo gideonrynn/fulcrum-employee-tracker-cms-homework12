@@ -20,10 +20,10 @@ const connection = mysql.createConnection({
   user: "root",
 
   // Your password
-  password: "",
+  password: "NUBC01root!",
 
   //Your db
-  database: ""
+  database: "fulcrum1_db"
 });
 
 // connect to server and db, and once connected, run first function
@@ -52,7 +52,7 @@ function action() {
       choices: 
       ["View all employees", 
        "Add an employee",
-       "Update an employee", 
+       "Update employee role", 
        "Remove an employee"]
 
     })
@@ -74,7 +74,7 @@ function action() {
         addEmpl();
         break;
 
-        case "Update an employee":
+        case "Update employee role":
         updateEmplRole();
         break;
 
@@ -88,14 +88,11 @@ function action() {
 
 
 function viewEmplAll () {
-  //connect to db and pull back all tables
-  //SELECT * FROM [table]
 
   console.log(`viewEmplAll function run`);
 
   //select statement
-  var query = "select employee.id, employee.first_name, employee.last_name, appointment.title, department.dept as 'department', appointment.salary " ;
-  //, ifnull(concat(m.first_name, ' ', m.last_name), 'none') as 'manager' 
+  var query = "select employee.id, employee.first_name, employee.last_name, appointment.title, department.dept as 'department', appointment.salary, ifnull(concat(m.first_name, ' ', m.last_name), 'none') as 'manager' " ;
   
   //plus from statement that inclues join
   query += "from employee inner join appointment on (employee.appt_id = appointment.id) ";
@@ -103,7 +100,9 @@ function viewEmplAll () {
   //join department by department id and foreign key in appointment table
   query += "inner join department on appointment.department_id = department.id "; 
 
-  // query += "left join employee as m on employee.manager_id = m.manager_id order by first_name asc";
+  query += "left join employee as m on employee.manager_id = m.id "
+  
+  query += "order by first_name asc";
 
     connection.query(query, function(err, res){
       if (err) throw err;
@@ -206,30 +205,67 @@ function addEmpl () {
 function updateEmplRole () {
   console.log(`updateEmpl function run`);
 
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "emplname",
-        message: "Select employee to update",
-        choices: 
-        //get list or prompt user for id
-        //function here to return data from sql database?
-        ["Name1",
-        "Name2",
-        "Name3"]
-      }
-    ])
+  let query = "SELECT employee.first_name FROM employee order by employee.first_name asc"
 
-    .then(function(answer) {
+  connection.query(query, function(err, res){
+    if (err) throw err;
 
-      //INSERT into database
-      console.log(`do something with this answer`)
+    inquirer
+      .prompt([
+        {
+          name: "choice",
+          type: "list",
+          message: "Select employee to update",
+          //get list or prompt user for id
+          //function here to return data from sql database?
+          choices: () => {
+            let employeesList = [];
+            for (let i = 0; i < res.length; i++) {
+              employeesList.push(res[i].first_name);
+            }
+            console.log(employeesList)
+            return employeesList;
+          }
+        },
+        {
+          type: "input",
+          name: "role",
+          message: "Enter new appointment:",
+          validate: (text) => {
+            if (text === "") {
+                return "Please enter an appointment name";
+            }
+            return true;
+          }
+        }
+      ])
 
-      //ask if user would like to take another action in db
-      contAction();
+      .then(function(answer) {
 
-  });
+        connection.query(
+            "UPDATE appointment SET ? WHERE ?",
+            [
+              {
+                columnname: answer.choice
+              },
+              {
+                columnname: answer.choice
+              }
+            ],
+            function(error) {
+              if (error) throw err;
+            });
+
+        //INSERT into database
+        console.log(`do something with this answer`);
+        console.log(answer.choice);
+
+        //ask if user would like to take another action in db
+        contAction();
+
+    });
+
+ });
 
 }
 
