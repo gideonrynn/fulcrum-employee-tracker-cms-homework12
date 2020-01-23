@@ -7,6 +7,8 @@
 
 //need to use any transactions?
 
+//consider using id to search for and delete things since it is given in the table
+
 const inquirer = require("inquirer");
 const mysql = require('mysql');
 const consoleTable = require('console.table');
@@ -20,10 +22,11 @@ const connection = mysql.createConnection({
   user: "root",
 
   // Your password
-  password: "NUBC01root!",
+  password: "",
 
   //Your db
-  database: "fulcrum1_db"
+  //schema/seed in schema folder
+  database: ""
 });
 
 // connect to server and db, and once connected, run first function
@@ -129,9 +132,11 @@ function viewEmplByDept () {
   //connect to db and pull back all tables
   //SELECT * FROM [table]
 
-  console.log(`viewEmplByDept function run`);
+  console.log(`viewRoles function run`);
 
 
+
+  
 }
 
 
@@ -202,66 +207,79 @@ function addEmpl () {
 }
 
 
+//consider using id as unique identifier
 function updateEmplRole () {
+
   console.log(`updateEmpl function run`);
 
-  let query = "SELECT employee.first_name FROM employee order by employee.first_name asc"
+  let query = "SELECT employee.first_name, employee.last_name,concat(employee.first_name, ' ', employee.last_name) 'fullname', employee.appt_id, appointment.title, appointment.id "
+
+  query += "from employee inner join appointment on (employee.appt_id = appointment.id) order by employee.first_name asc";
 
   connection.query(query, function(err, res){
     if (err) throw err;
 
+    // console.log(res)
+
     inquirer
       .prompt([
         {
-          name: "choice",
+          name: "emplupdate",
           type: "list",
           message: "Select employee to update",
-          //get list or prompt user for id
-          //function here to return data from sql database?
           choices: () => {
             let employeesList = [];
             for (let i = 0; i < res.length; i++) {
-              employeesList.push(res[i].first_name);
+              employeesList.push(res[i].first_name + ' ' + res[i].last_name);
             }
-            console.log(employeesList)
+            // console.log(employeesList)
             return employeesList;
           }
         },
         {
-          type: "input",
-          name: "role",
+          name: "apptupdate",
+          type: "list",
           message: "Enter new appointment:",
-          validate: (text) => {
-            if (text === "") {
-                return "Please enter an appointment name";
+          choices: () => {
+            let apptList = [];
+            for (let i = 0; i < res.length; i++) {
+              apptList.push(res[i].title);
             }
-            return true;
+            console.log(apptList);
+            return apptList;
           }
         }
       ])
 
       .then(function(answer) {
 
-        connection.query(
-            "UPDATE appointment SET ? WHERE ?",
-            [
-              {
-                columnname: answer.choice
-              },
-              {
-                columnname: answer.choice
-              }
-            ],
-            function(error) {
-              if (error) throw err;
-            });
+        // console.log(answer);
+        console.log(res);
 
-        //INSERT into database
-        console.log(`do something with this answer`);
-        console.log(answer.choice);
+        let resFirstname = "";
+        let resLastname = "";
+        // let newApptID = "";
 
-        //ask if user would like to take another action in db
-        contAction();
+        for (let i = 0; i < res.length; i++) {
+            if (answer.emplupdate === res[i].fullname) {
+              resFirstname = res[i].first_name;
+              resLastname = res[i].last_name;
+              // newApptID = res[i].id
+              // newApptID.push(res[i].a)
+            }
+            if (answer.apptupdate === res[i].id) {
+
+            }
+
+        }
+
+        console.log(resFirstname);
+        console.log(resLastname);
+  
+
+          // ask if user would like to take another action in db
+          contAction();
+      // });
 
     });
 
@@ -270,32 +288,63 @@ function updateEmplRole () {
 }
 
 function removeEmpl() {
+  
   console.log(`removeEmpl function run`);
 
-  inquirer
-    .prompt([
-      {
-        type: "list",
-        name: "type",
-        message: "Select employee to be removed",
-        choices: 
-        //consider pulling from list or asking for unique information. would id work here? may only be for db purposes
-        ["Name1", 
-         "Name2", 
-         "Name3"],
-      }
-    ])
+  let query = "SELECT employee.first_name, employee.last_name, concat(employee.first_name, ' ', employee.last_name) 'fullname', employee.id FROM employee order by employee.first_name asc"
+  
+  connection.query(query, function(err, res){
+    if (err) throw err;
+
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "emplremove",
+          message: "Select employee to be removed",
+          choices: () => {
+              let employeesList = [];
+              for (let i = 0; i < res.length; i++) {
+                employeesList.push(res[i].fullname);
+              }
+              console.log(employeesList)
+              return employeesList;
+          }
+        }
+
+      ])
 
     .then(function(answer) {
 
-      //console.logs
-      console.log()
-      console.log(`do something with this answer`);
+      let idToDelete = "";
 
-      //ask if user would like to take another action in db
-      contAction();
+      for (let i = 0; i < res.length; i++) {
+        if (answer.emplremove === res[i].fullname) {
+          idToDelete = res[i].id;
+        }
+      }
 
+      connection.query(
+        "DELETE FROM employee WHERE ?",
+        {
+          id: idToDelete,
+        },
+
+        function(err, res) {
+          if (err) throw err;
+
+          console.log("removed!");
+          // ask if user would like to take another action in db
+          contAction();
+        }
+
+      );
+      
+    });
+
+    //end connection query
   });
+
 
 }
 
