@@ -13,14 +13,14 @@ Once logged in with [GitHub account](https://github.login/), clone the repo loca
   git clone https://github.com/gideonrynn/teampacr-profile-generator-hw7.git
 ```
 
-Update password and database to local database. Example files in test files folder. 
+Update password and database to local database for mysql connection. Example seed and schema in test files folder. 
 
 Also see: [Cloning a repository](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository).
 
 
 # Usage
 
-Fulcrum is a CMS that allows users to track department and employee business data. With information in the CMS, business managers can easily retrieve an overview of the department, report on the number of employees, salaries, and roles, and make informed business decisions for fiscal year goals.
+Fulcrum is a simple CMS app that allows users to track department and employee business data. With information in the CMS, business managers can easily retrieve an overview of the department, report on the number of employees, salaries, and roles, and make informed business decisions for fiscal year goals.
 
 Application is initiated in the command line. 
 
