@@ -22,7 +22,7 @@ const connection = mysql.createConnection({
   user: "root",
 
   // Your password
-  password: "",
+  password: "!",
 
   //Your db
   //schema/seed in schema folder
@@ -54,9 +54,12 @@ function action() {
       message: "What would you like to do first?",
       choices: 
       ["View all employees", 
-       "Add an employee",
        "Update employee role", 
-       "Remove an employee"]
+       "Remove an employee",
+       "Add an employee",
+        "Add a department",
+        "Add an appointment"
+    ]
 
     })
 
@@ -69,20 +72,24 @@ function action() {
         viewEmplAll();
         break;
 
-        case "View all employees by department":
-        viewEmplByDept();
-        break;
-
-        case "Add an employee": 
-        addEmpl();
-        break;
-
         case "Update employee role":
         updateEmplRole();
         break;
 
         case "Remove an employee":
         removeEmpl();
+        break;
+
+        case "Add an employee": 
+        addEmpl();
+        break;
+
+        case "Add a department":
+        addDept();
+        break;
+
+        case "Add an appointment":
+        addRole();
         break;
       }
 
@@ -128,17 +135,6 @@ function viewEmplAll () {
 
 }
 
-function viewEmplByDept () {
-  //connect to db and pull back all tables
-  //SELECT * FROM [table]
-
-  console.log(`viewRoles function run`);
-
-
-
-  
-}
-
 
 function addEmpl () {
 
@@ -151,7 +147,7 @@ function addEmpl () {
   let queryEmplRes = [];
   let queryApptRes = [];
 
-  //create a promise that will return query data from both tables then apply to inquirer prompts
+  //create a promise that will return query data from both tables then apply to inquirer prompts, some of which display data from the database for user selections
   new Promise ((resolve, reject) => {
     connection.query(queryEmpl, function(err, res){
       if (err) { reject(err);
@@ -173,61 +169,62 @@ function addEmpl () {
 
   }).then (data => {
 
-
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "firstname",
-        message: "Enter employee's first name:",
-        validate: (text) => {
-          if (text === "") {
-            return "Please enter a name";
-          }
-            return true;
-        }
-      },
-      {
-        type: "input",
-        name: "lastname",
-        message: "Enter employee's last name:",
-        validate: (text) => {
-          if (text === "") {
+    //prompt user for data that will ultimately be inserted into the database
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "firstname",
+          message: "Enter employee's first name:",
+          validate: (text) => {
+            if (text === "") {
               return "Please enter a name";
+            }
+              return true;
           }
-          return true;
-        }
-      },
-      {
-        type: "list",
-        name: "apptEntry",
-        message: "Enter employee's role:",
-        choices: () => {
-          let apptList = [];
-          for (let i = 0; i < queryApptRes.length; i++) {
-            apptList.push(queryApptRes[i].title);
+        },
+        {
+          type: "input",
+          name: "lastname",
+          message: "Enter employee's last name:",
+          validate: (text) => {
+            if (text === "") {
+                return "Please enter a name";
+            }
+            return true;
           }
-          console.log(apptList);
-          return apptList;
-        }
-      },
-      {
-        type: "list",
-        name: "manager",
-        message: "Who is the employee's manager?",
-        choices: () => {
-          let managerList = ['none'];
-          for (let i = 0; i < queryEmplRes.length; i++) {
-            managerList.push(queryEmplRes[i].fullname);
+        },
+        {
+          type: "list",
+          name: "apptEntry",
+          message: "Enter employee's role:",
+          choices: () => {
+            let apptList = [];
+            for (let i = 0; i < queryApptRes.length; i++) {
+              apptList.push(queryApptRes[i].title);
+            }
+            console.log(apptList);
+            return apptList;
           }
-          // console.log(employeesList)
-          return managerList;
+        },
+        {
+          type: "list",
+          name: "manager",
+          message: "Who is the employee's manager?",
+          choices: () => {
+            let managerList = ['none'];
+            for (let i = 0; i < queryEmplRes.length; i++) {
+              managerList.push(queryEmplRes[i].fullname);
+            }
+            // console.log(employeesList)
+            return managerList;
+          }
         }
-      }
-    ])
+      ])
 
     .then(function(answer) {
 
+      //match user input against database response and get manager id (which == employee id)
       let managerID = "";
 
       for (let i = 0; i < queryEmplRes.length; i++) {
@@ -236,6 +233,7 @@ function addEmpl () {
         }
       }
 
+      //match user input against database response and get apptID
       let apptID = "";
 
       for (let i = 0; i < queryApptRes.length; i++) {
@@ -279,76 +277,103 @@ function addEmpl () {
 
 function updateEmplRole () {
 
-  console.log(`updateEmpl function run`);
+  //create variables that hold queries for the employee and appointment tables
+  let queryEmpl = "SELECT employee.id, employee.first_name, employee.last_name,concat(employee.first_name, ' ', employee.last_name) 'fullname', employee.appt_id from employee order by employee.first_name asc";
 
-  let query = "SELECT employee.first_name, employee.last_name,concat(employee.first_name, ' ', employee.last_name) 'fullname', employee.appt_id, appointment.title, appointment.id "
+  let queryAppt = "SELECT appointment.title, appointment.id from appointment order by appointment.title asc"
 
-  query += "from employee inner join appointment on (employee.appt_id = appointment.id) order by employee.first_name asc";
+  //create variables that will hold the responses of those queries
+  let queryEmplRes = [];
+  let queryApptRes = [];
 
-  connection.query(query, function(err, res){
-    if (err) throw err;
+  //create a promise that will return query data from both tables then apply to inquirer prompts, some of which display data from the database for user selections
+  new Promise ((resolve, reject) => {
+    connection.query(queryEmpl, function(err, res){
+      if (err) { reject(err);
+      } else { resolve(res);
 
-    // console.log(res)
+        queryEmplRes = res;
 
-    inquirer
-      .prompt([
-        {
-          name: "emplupdate",
-          type: "list",
-          message: "Select employee to update",
-          choices: () => {
-            let employeesList = [];
-            for (let i = 0; i < res.length; i++) {
-              employeesList.push(res[i].first_name + ' ' + res[i].last_name);
+      }
+    });
+    
+  }).then(data => {
+    connection.query(queryAppt, function(err, res){
+      if (err) { throw err };
+
+      queryApptRes = res;
+
+    });
+
+  }).then (data => {
+
+      inquirer
+        .prompt([
+          {
+            name: "emplupdate",
+            type: "list",
+            message: "Select employee to update",
+            choices: () => {
+              let employeesList = [];
+              for (let i = 0; i < queryEmplRes.length; i++) {
+                employeesList.push(queryEmplRes[i].fullname);
+              }
+              return employeesList;
             }
-            // console.log(employeesList)
-            return employeesList;
-          }
-        },
-        {
-          name: "apptupdate",
-          type: "list",
-          message: "Enter new appointment:",
-          choices: () => {
-            let apptList = [];
-            for (let i = 0; i < res.length; i++) {
-              apptList.push(res[i].title);
+          },
+          {
+            name: "apptupdate",
+            type: "list",
+            message: "Enter new appointment:",
+            choices: () => {
+              let apptList = [];
+              for (let i = 0; i < queryApptRes.length; i++) {
+                apptList.push(queryApptRes[i].title);
+              }
+              return apptList;
             }
-            console.log(apptList);
-            return apptList;
           }
-        }
-      ])
+        ])
 
       .then(function(answer) {
 
-        // console.log(answer);
-        console.log(res);
+        let emplID = "";
 
-        let resFirstname = "";
-        let resLastname = "";
-        // let newApptID = "";
+        for (let i = 0; i < queryEmplRes.length; i++) {
+          if (answer.emplupdate === queryEmplRes[i].fullname) {
+              emplID = queryEmplRes[i].id;
+          }
+        }
+     
+        //match user input against database response and get apptID
+        let apptID = "";
 
-        for (let i = 0; i < res.length; i++) {
-            if (answer.emplupdate === res[i].fullname) {
-              resFirstname = res[i].first_name;
-              resLastname = res[i].last_name;
-              // newApptID = res[i].id
-              // newApptID.push(res[i].a)
-            }
-            if (answer.apptupdate === res[i].id) {
-
-            }
-
+        for (let i = 0; i < queryApptRes.length; i++) {
+          if (answer.apptupdate === queryApptRes[i].title) {
+              apptID = queryApptRes[i].id;
+          }
         }
 
-        console.log(resFirstname);
-        console.log(resLastname);
+        connection.query(
+          "UPDATE employee SET ? WHERE ?",
+          [
+            {
+              appt_id: apptID
+            },
+            {
+              id: emplID
+            }
+          ],
   
-
-          // ask if user would like to take another action in db
-          contAction();
-      // });
+            function(err, res) {
+            if (err) throw err;
+  
+            console.log("update complete!");
+            // ask if user would like to take another action in db
+            contAction();
+            
+            }
+        );
 
     });
 
@@ -393,6 +418,7 @@ function removeEmpl() {
         }
       }
 
+      //connect to sql database and delete the record associated with the below employee id
       connection.query(
         "DELETE FROM employee WHERE ?",
         {
@@ -415,6 +441,48 @@ function removeEmpl() {
   });
 
 
+}
+
+
+function addDept () {
+
+    //prompt user for data that will ultimately be inserted into the database
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "newdept",
+          message: "Enter the new department name:",
+          validate: (text) => {
+            if (text === "") {
+              return "Please enter a department name";
+            }
+              return true;
+          }
+        }
+      ])
+
+    .then(function(answer) {
+
+      //connect to sql database and insert the following name for the department
+      //dept id will auto increment in database, no need to define here
+      connection.query(
+        "INSERT INTO department SET ?",
+        {
+          dept: answer.newdept,
+        },
+
+          function(err, res) {
+          if (err) throw err;
+
+          console.log("New department added!");
+          // ask if user would like to take another action in db
+          contAction();
+          
+          }
+      );
+  
+    });
 }
 
 
@@ -447,24 +515,3 @@ function contAction () {
   });
 
 }
-
-
-//inquirer when questions are a variable. not using for this app
-// inquirer.prompt(questions)
-//   .then((answers) => {
-// });
-
-//can be used within an inquirer question object when a question should only be asked based on certain information within the current prompts
-// when: (answers) => answers.type === 'Add an employee'
-
-
-//uncomment to show how console.table will print 
-// console.table([
-//   {
-//     name: 'foo',
-//     age: 10
-//   }, {
-//     name: 'bar',
-//     age: 20
-//   }
-// ]);
