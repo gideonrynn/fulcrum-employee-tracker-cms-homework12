@@ -141,12 +141,38 @@ function viewEmplByDept () {
 
 
 function addEmpl () {
-  
-  console.log(`addEmpl function run`);
 
-  // query the database for manager data
-  // connection.query("SELECT * FROM [table] WHERE", function(err,      data) {
-  //   if (err) throw err;
+  //create variables that hold queries for the employee and appointment tables
+  let queryEmpl = "SELECT employee.id, employee.first_name, employee.last_name,concat(employee.first_name, ' ', employee.last_name) 'fullname', employee.appt_id from employee order by employee.first_name asc";
+
+  let queryAppt = "SELECT appointment.title, appointment.id from appointment order by appointment.title asc"
+
+  //create variables that will hold the responses of those queries
+  let queryEmplRes = [];
+  let queryApptRes = [];
+
+  //create a promise that will return query data from both tables then apply to inquirer prompts
+  new Promise ((resolve, reject) => {
+    connection.query(queryEmpl, function(err, res){
+      if (err) { reject(err);
+      } else { resolve(res);
+
+        queryEmplRes = res;
+
+        console.log(queryEmplRes);
+      }
+    });
+    
+  }).then(data => {
+    connection.query(queryAppt, function(err, res){
+      if (err) { throw err };
+
+      queryApptRes = res;
+
+    });
+
+  }).then (data => {
+
 
   inquirer
     .prompt([
@@ -173,41 +199,84 @@ function addEmpl () {
         }
       },
       {
-        type: "input",
-        name: "role",
+        type: "list",
+        name: "apptEntry",
         message: "Enter employee's role:",
-        validate: (text) => {
-          if (text === "") {
-              return "Please enter a name";
+        choices: () => {
+          let apptList = [];
+          for (let i = 0; i < queryApptRes.length; i++) {
+            apptList.push(queryApptRes[i].title);
           }
-          return true;
+          console.log(apptList);
+          return apptList;
         }
       },
       {
         type: "list",
         name: "manager",
         message: "Who is the employee's manager?",
-        choices: 
-        //function here to return data from sql database?
-        ["Name"]
+        choices: () => {
+          let managerList = ['none'];
+          for (let i = 0; i < queryEmplRes.length; i++) {
+            managerList.push(queryEmplRes[i].fullname);
+          }
+          // console.log(employeesList)
+          return managerList;
+        }
       }
     ])
 
     .then(function(answer) {
 
-      //console.logs
-      console.log(answer);
-      console.log(`do something with these answers`);
+      let managerID = "";
 
-      //ask if user would like to take another action in db
-      contAction();
+      for (let i = 0; i < queryEmplRes.length; i++) {
+        if (answer.manager === queryEmplRes[i].fullname) {
+            managerID = queryEmplRes[i].id;
+        }
+      }
+
+      let apptID = "";
+
+      for (let i = 0; i < queryApptRes.length; i++) {
+          if (answer.apptEntry === queryApptRes[i].title) {
+              apptID = queryApptRes[i].id;
+          }
+      }
+
+      //connect to sql database and insert the following values that represent a new employee
+      //empl id will auto increment in database, no need to define here
+      connection.query(
+        "INSERT INTO employee SET ?",
+        {
+          first_name: answer.firstname,
+          last_name: answer.lastname,
+          appt_id: apptID,
+          manager_id: managerID
+        },
+
+          function(err, res) {
+          if (err) throw err;
+
+          console.log("added!");
+          // ask if user would like to take another action in db
+          contAction();
+          
+          }
+      );
+  
+    });
+
+  }).catch(err => {
+
+    console.log(err);
 
   });
+  
 
 }
 
 
-//consider using id as unique identifier
 function updateEmplRole () {
 
   console.log(`updateEmpl function run`);
