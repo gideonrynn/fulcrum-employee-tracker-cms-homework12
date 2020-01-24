@@ -1,5 +1,5 @@
 //application should allow users to:
-//View departments, roles, employees
+//View departments, roles, employees 
 //Add departments, roles, employees
 //Update employee roles
 
@@ -22,7 +22,7 @@ const connection = mysql.createConnection({
   user: "root",
 
   // Your password
-  password: "!",
+  password: "",
 
   //Your db
   //schema/seed in schema folder
@@ -72,6 +72,10 @@ function action() {
         viewEmplAll();
         break;
 
+        case "View all departments":
+        viewDept();
+        break;
+
         case "Update employee role":
         updateEmplRole();
         break;
@@ -89,7 +93,7 @@ function action() {
         break;
 
         case "Add an appointment":
-        addRole();
+        addAppt();
         break;
       }
 
@@ -401,7 +405,6 @@ function removeEmpl() {
               for (let i = 0; i < res.length; i++) {
                 employeesList.push(res[i].fullname);
               }
-              console.log(employeesList)
               return employeesList;
           }
         }
@@ -482,7 +485,90 @@ function addDept () {
           }
       );
   
+  });
+}
+
+function addAppt () {
+
+  let queryDept = "SELECT department.dept, department.id from department order by department.dept asc"
+  
+  connection.query(queryDept, function(err, res){
+    if (err) throw err;
+
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "newtitle",
+          message: "Enter new appointment title:",
+          validate: (text) => {
+            if (text === "") {
+              return "Please enter an appointment name";
+            }
+              return true;
+          }
+        },
+        {
+          type: "input",
+          name: "newsalary",
+          message: "Enter salary for this appointment (ex/30000):",
+          validate: (num) => {
+            if (num === "") {
+                return "Please enter number";
+            }
+            return true;
+          }
+        },
+        {
+          type: "list",
+          name: "deptlist",
+          message: "Select department in which role resides",
+          choices: () => {
+              let deptList = [];
+              for (let i = 0; i < res.length; i++) {
+                deptList.push(res[i].dept);
+              }
+              return deptList;
+          }
+        }
+
+      ])
+
+    .then(function(answer) {
+
+      let deptID = "";
+
+      for (let i = 0; i < res.length; i++) {
+        if (answer.deptlist === res[i].dept) {
+          deptID = res[i].id;
+        }
+      }
+
+     //connect to sql database and insert the following name for the department
+      //dept id will auto increment in database, no need to define here
+      connection.query(
+        "INSERT INTO appointment SET ?",
+        {
+          title: answer.newtitle,
+          salary: answer.newsalary,
+          department_id: deptID,
+        },
+
+          function(err, res) {
+          if (err) throw err;
+
+          console.log("New role added!");
+          // ask if user would like to take another action in db
+          contAction();
+          
+          }
+      );
+      
     });
+
+    //end connection query
+  });
+
 }
 
 
