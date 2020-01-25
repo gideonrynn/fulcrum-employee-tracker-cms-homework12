@@ -10,14 +10,14 @@ const connection = mysql.createConnection({
   user: "root",
 
   // Your password
-  password: "",
+  password: "password",
 
   //use default fulcrum_db
   database: "fulcrum_db"
 
   //**Seed for fulcrum_db
   //fulcrum_db will run *without* seed database. Follow prompts to add departments, appointments and employees
-  //Optional may use fulcrum_seed_teststartrek to test application with database records
+  //Optional: may use fulcrum_seed_teststartrek to test application with database records
 
 });
 
@@ -173,15 +173,6 @@ function addEmpl () {
 
   }).then (() => {
     
-    console.log(queryApptRes == "")
-
-    if (queryApptRes == "") {
-      console.log("Please 'add a department' and 'add an appointment' before adding employees")
-      contAction();
-
-    } else {
-
-    
       //prompt user for data that will ultimately be inserted into the database
       inquirer
         .prompt([
@@ -272,8 +263,6 @@ function addEmpl () {
             if (err) throw err;
 
             console.log("New employee has been added!");
-
-            console.log(queryApptRes)
             // ask if user would like to take another action in db
             contAction();
             
@@ -282,8 +271,6 @@ function addEmpl () {
     
       });
     
-    }
-
   }).catch(err => {
 
     console.log(err);
@@ -300,12 +287,6 @@ function addAppt () {
   
   connection.query(queryDept, function(err, res){
     if (err) throw err;
-
-    if (res == "") {
-      console.log("Please 'add a department' before adding appointments")
-      contAction();
-
-    } else {
 
       inquirer
         .prompt([
@@ -378,7 +359,6 @@ function addAppt () {
         
       });
 
-    }
     //end connection query
   });
 
@@ -614,7 +594,7 @@ function removeAppt() {
           choices: () => {
               let apptList = [];
               for (let i = 0; i < res.length; i++) {
-                deptList.push(res[i].title);
+                apptList.push(res[i].title);
                
               }
               return apptList;

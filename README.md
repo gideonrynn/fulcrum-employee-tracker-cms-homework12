@@ -20,9 +20,16 @@ Also see: [Cloning a repository](https://help.github.com/en/github/creating-clon
 
 # Usage
 
-Fulcrum is a simple CMS app that allows users to track department and employee business data. With information in the CMS, business managers can easily retrieve an overview of the department, report on the number of employees, salaries, and roles, and make informed business decisions for fiscal year goals.
+Fulcrum is a simple CMS app that allows users to track department and employee business data. With information in the app, business managers can easily retrieve an overview of the department, report on the number of employees, and departments, and make informed business decisions for fiscal year end goals.
 
 Application is initiated in the command line. 
+
+Users are able to:
+
+- Add employees, appointments and departments
+- Remove employees, appointsments and departments
+- Update employee roles
+- View a list of all employees and their roles, salaries, and departments
 
 
 # Technologies
