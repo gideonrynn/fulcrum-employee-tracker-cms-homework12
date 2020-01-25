@@ -7,13 +7,23 @@ This is a Git Hub repository for the NU Coding Bootcamp Employee Tracker CMS Hom
 
 # Setup
 
-Once logged in with [GitHub account](https://github.login/), clone the repo locally using link:
+1. Once logged in with [GitHub account](https://github.login/), clone the repo locally using link:
 
+  ```sh
+    git clone https://github.com/gideonrynn/teampacr-profile-generator-hw7.git
+  ```
+
+2. Install dependencies:
 ```sh
-  git clone https://github.com/gideonrynn/teampacr-profile-generator-hw7.git
+  npm i
 ```
 
-Update password and database to local database for mysql connection. Example seed and schema in test files folder. 
+3. Load fulcrum_schema and update password in fulcrumapp file. Follow prompts for creating file from scratch.
+
+    (Optional) To test with seed file, load fulcrum_seed_optionaltest_st.sql from /assets/database folder and follow instructions. 
+
+4. Run in command line with node fulcrumapp.js
+
 
 Also see: [Cloning a repository](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository).
 

@@ -3,6 +3,7 @@ const mysql = require('mysql');
 const consoleTable = require('console.table');
 
 
+
 // create the connection for mysql db
 const connection = mysql.createConnection({
   host: "localhost",
@@ -16,8 +17,8 @@ const connection = mysql.createConnection({
   database: "fulcrum_db"
 
   //**Seed for fulcrum_db
-  //fulcrum_db will run *without* seed database. Follow prompts to add departments, appointments and employees
-  //Optional: may use fulcrum_seed_teststartrek to test application with database records
+  //fulcrum_db will run from scratch without seed database. Follow prompts to add departments, appointments and employees
+  //Optional: may use fulcrum_seed_optionaltest_st to test application with pre-populated database records
 
 });
 
@@ -28,9 +29,7 @@ connection.connect(function(err) {
     console.error("Error connecting: " + err.stack);
     return;
   }
-  console.log("Connected as id " + connection.threadId + ". Welcome to the Fulcrum app.");
-
-
+  console.log('\n' + "Connected as id " + connection.threadId + ". Welcome to the Fulcrum app!");
 
   //run function that will ask the user what they want to do in the database
   action();
@@ -39,7 +38,7 @@ connection.connect(function(err) {
   
 //runs at startup to prompt user what they would like to do next
 function action() {
-
+  console.log('\n' + "*For new databases, create departments(1) then appointments(2) before adding employees.", '\n')
   inquirer
     .prompt({
 
@@ -48,13 +47,15 @@ function action() {
       message: "What would you like to do first?",
       choices: 
       ["View all employees", 
-      "Add an employee",
-      "Add an appointment",
       "Add a department",
-       "Update employee role", 
-       "Remove an employee",
-       "Remove an appointment",
-       "Remove a department"
+      "Add an appointment*",
+      "Add an employee*",
+      "Remove a department",
+      "Remove an appointment",
+      "Remove an employee",
+       "Update employee role",
+       "Exit app"
+       
     ]
 
     })
@@ -88,7 +89,7 @@ function action() {
         removeDept();
         break
 
-        case "Add an employee": 
+        case "Add an employee*": 
         addEmpl();
         break;
 
@@ -96,9 +97,14 @@ function action() {
         addDept();
         break;
 
-        case "Add an appointment":
+        case "Add an appointment*":
         addAppt();
         break;
+
+        case "Exit app":
+        contAction();
+        break
+
       }
 
     });
@@ -116,7 +122,7 @@ function viewEmplAll () {
   //add join department by department id and foreign key in appointment table
   query += "inner join department on appointment.department_id = department.id "; 
 
-  //add left join only so that employee information will display as manager
+  //add left join only so that employee information will display as manager even if the manager id is null
   query += "left join employee as m on employee.manager_id = m.id "
   
   query += "order by first_name asc";
@@ -133,7 +139,7 @@ function viewEmplAll () {
         }
 
         //display all data as table
-        console.table( alldata );
+        console.table('\n', alldata);
 
       //ask if user would like to take another action in db
       contAction();
@@ -159,18 +165,15 @@ function addEmpl () {
     connection.query(queryEmpl, function(err, res){
       if (err) { reject(err);
       } else { resolve(res);
-
         queryEmplRes = res;
       }
     });
     
-  }).then( () => {
+  }).then( (data) => {
     connection.query(queryAppt, function(err, res){
       if (err) { throw err };
       queryApptRes = res;
-
     });
-
   }).then (() => {
     
       //prompt user for data that will ultimately be inserted into the database
