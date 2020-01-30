@@ -10,7 +10,7 @@ This is a Git Hub repository for the NU Coding Bootcamp Employee Tracker CMS Hom
 1. Once logged in with [GitHub account](https://github.login/), clone the repo locally using link:
 
   ```sh
-    git clone https://github.com/gideonrynn/teampacr-profile-generator-hw7.git
+    git clone https://github.com/gideonrynn/fulcrum-employee-tracker-cms-homework12.git
   ```
 
 2. Install dependencies:
